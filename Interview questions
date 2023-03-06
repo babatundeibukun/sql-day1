@@ -1,0 +1,17 @@
+SELECT ct.contest_id , ct.hacker_id , ct.name , SUM(ss.total_submissions) AS ts , SUM(ss.total_accepted_submissions) AS tsa, SUM(vs.total_views) AS tv, SUM(vs.total_unique_views) AS tuv
+FROM contests ct
+LEFT JOIN colleges cl
+ON ct.contest_id = cl.contest_id
+LEFT JOIN challenges cg
+ON cg.college_id = cl.college_id
+LEFT JOIN (SELECT challenge_id , SUM(total_views) AS total_views, SUM(total_unique_views) AS total_unique_views
+FROM view_stats 
+GROUP BY 1) vs 
+ON vs.challenge_id = cg.challenge_id
+LEFT JOIN (SELECT challenge_id , SUM(total_submissions) AS total_submissions,             SUM(total_accepted_submissions) AS total_accepted_submissions
+FROM submission_stats 
+GROUP BY 1) ss
+ON ss.challenge_id = cg.challenge_id
+GROUP BY 1,2,3
+HAVING ts+ tsa+ tv + tuv > 0
+ORDER BY 1
